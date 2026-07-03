@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="monolith-otel-lab"/>
+
+    <!-- JSON console appender. Micrometer Tracing puts traceId/spanId into the MDC;
+         we expose them as trace_id/span_id so logs can be correlated with traces. -->
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <fieldName>timestamp</fieldName>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <logLevel>
+                    <fieldName>level</fieldName>
+                </logLevel>
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                    <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
+                </loggerName>
+                <message/>
+                <pattern>
+                    <pattern>
+                        {
+                          "service": "${appName}",
+                          "trace_id": "%mdc{traceId}",
+                          "span_id": "%mdc{spanId}"
+                        }
+                    </pattern>
+                </pattern>
+                <arguments/>
+                <stackTrace/>
+            </providers>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="JSON"/>
+    </root>
+
+</configuration>

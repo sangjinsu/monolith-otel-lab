@@ -1,0 +1,12 @@
+.git
+.gitignore
+.gradle
+build
+*.md
+.workspace
+.omc
+.remember
+deploy
+scripts
+.idea
+*.iml
