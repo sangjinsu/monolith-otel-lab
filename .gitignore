@@ -19,3 +19,4 @@ build/
 # Tooling state (not part of the project)
 .omc/
 .remember/
+.gstack/

@@ -8,8 +8,15 @@ import org.springframework.stereotype.Component;
 
 /**
  * Fake payment client. Does not call any real external API.
- * Default: sleep 50~300ms then succeed.
+ * Default: sleep 50~300ms then succeed — this dominates request latency on purpose,
+ * so the bottleneck is easy to spot in a trace.
  * failPayment=true: sleep 100ms then throw, so a failure span can be observed.
+ *
+ * Error-recording lesson: when authorize() throws, ObservedAspect calls
+ * observation.error(ex) and the OTel bridge converts that into span status ERROR
+ * plus an exception event — which is why Tempo shows this span in red for failed
+ * orders. payment.result=failed is tagged *before* throwing so the business outcome
+ * stays on the span.
  */
 @Component
 public class FakePaymentClient {

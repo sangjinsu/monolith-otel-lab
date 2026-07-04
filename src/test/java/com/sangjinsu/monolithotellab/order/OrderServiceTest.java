@@ -30,6 +30,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/**
+ * Layer 1 of this repo's test pyramid: a pure unit test with Mockito.
+ * Observability lesson: instrumentation is neutralized with ObservationRegistry.NOOP
+ * and SimpleMeterRegistry, and the Tracer is mocked — business logic stays testable
+ * without any tracing backend running.
+ */
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
 

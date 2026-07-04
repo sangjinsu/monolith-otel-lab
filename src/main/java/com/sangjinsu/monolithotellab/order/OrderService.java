@@ -45,6 +45,10 @@ public class OrderService {
         this.paymentClient = paymentClient;
         this.observationRegistry = observationRegistry;
         this.tracer = tracer;
+        // Explicit instrumentation: business counters live in the service, which is why
+        // this constructor has six dependencies. That is the honest cost of manual
+        // instrumentation — see docs/observability-deep-dive.md §9 (and study-guide
+        // exercise 5: extract an OrderMetrics component).
         this.createdCounter = Counter.builder("order.created.count")
                 .description("Number of successfully created orders")
                 .register(meterRegistry);
@@ -91,8 +95,12 @@ public class OrderService {
     }
 
     /**
-     * OrderRepository is a Spring Data interface, so we wrap the save call in an
-     * Observation to produce an explicit "OrderRepository.insert" span.
+     * OrderRepository is a Spring Data proxy — we do not own its implementation, so
+     * {@code @Observed} cannot be placed on it. Instead the call site is wrapped in a
+     * manual Observation: exactly what {@code @Observed} does under the hood, written
+     * out explicitly (compare with InventoryService.reserve). The low-cardinality key
+     * values become span tags; contextualName becomes the span name, normalized to
+     * kebab-case ("order-repository.insert") — docs/observability-deep-dive.md §3/§5.
      */
     private void insertOrder(Order order) {
         Observation.createNotStarted("order.repository.insert", observationRegistry)
@@ -102,6 +110,12 @@ public class OrderService {
                 .observe(() -> orderRepository.save(order));
     }
 
+    /**
+     * Tags the current span with business identifiers. This works because
+     * ObservedAspect opens the "OrderService.createOrder" span *before* the method
+     * body runs, so tracer.currentSpan() here returns that span. Only non-sensitive
+     * values may become span attributes (AGENTS.md span attribute rules).
+     */
     private void tagCreateSpan(String orderId, CreateOrderRequest request) {
         Span span = tracer.currentSpan();
         if (span != null) {

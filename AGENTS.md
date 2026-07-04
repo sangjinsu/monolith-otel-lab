@@ -241,6 +241,10 @@ PaymentClient.authorize
 OrderRepository.insert
 ```
 
+> 참고: Micrometer Tracing은 span 이름(contextualName)을 kebab-case로 정규화한다
+> (`OrderService.createOrder` → `order-service.create-order`). Grafana Tempo에는 정규화된
+> 이름으로 표시되며 이는 정상 동작이다. 원리: `docs/observability-deep-dive.md` §3.
+
 나쁜 span 이름:
 
 ```text

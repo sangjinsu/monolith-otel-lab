@@ -3,8 +3,11 @@
 
     <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="monolith-otel-lab"/>
 
-    <!-- JSON console appender. Micrometer Tracing puts traceId/spanId into the MDC;
-         we expose them as trace_id/span_id so logs can be correlated with traces. -->
+    <!-- JSON console appender. Micrometer Tracing puts traceId/spanId into the MDC
+         whenever an observation scope (e.g. an HTTP request) is active; the <pattern>
+         provider below renames them to trace_id/span_id — the log field contract from
+         AGENTS.md. Outside a request (startup logs etc.) both fields are empty.
+         This small mapping is what makes log->trace correlation work (deep-dive §8). -->
     <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>

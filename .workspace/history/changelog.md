@@ -29,3 +29,11 @@
 ### ADRs
 - 0001 scope, 0002 monolith/Java packages, 0003 otel/tempo + actuator metrics,
   0004 Micrometer observability, 0005 PostgreSQL+JPA, 0006 Java/Spring Boot.
+
+### Learning material (2026-07-04)
+- docs/: architecture(구성도 4종 mermaid + 설정 파일 지도), observability-deep-dive(동작 원리),
+  study-guide(체크포인트 8 · 연습문제 6 · FAQ) + Grafana 실캡처 3장(docs/images/).
+- README 학습 가이드 섹션 + What to Check에 실제 kebab-case span 이름 반영,
+  AGENTS.md Trace Design에 이름 정규화 노트.
+- 교육용 코드 주석(영어): 관측성 핵심 지점 6곳 + 테스트 4클래스 헤더.
+- LICENSE(MIT), GitHub topics 9종(opentelemetry, spring-boot, micrometer, grafana-tempo 등).

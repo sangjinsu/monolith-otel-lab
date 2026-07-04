@@ -21,6 +21,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+/**
+ * Layer 2: @WebMvcTest slice — only the web layer (controller + advice) is loaded.
+ * Verifies the HTTP contract: status codes (201/402/400/404) and the snake_case JSON
+ * field names produced by the global Jackson naming strategy in application.yml.
+ */
 @WebMvcTest(OrderController.class)
 class OrderControllerTest {
 

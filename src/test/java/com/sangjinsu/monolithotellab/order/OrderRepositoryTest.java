@@ -9,8 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 /**
- * JPA mapping / persistence slice test on an embedded H2 database.
- * Real PostgreSQL behaviour is exercised through the docker-compose stack (make up).
+ * Layer 3: @DataJpaTest slice — JPA mapping/persistence on an embedded H2 database
+ * for fast feedback; real PostgreSQL behaviour is exercised via the docker-compose
+ * stack (make up). Shows @EntityGraph fetching (findWithItemsById) round-tripping a
+ * parent aggregate with its children.
  */
 @DataJpaTest
 class OrderRepositoryTest {

@@ -14,8 +14,13 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * Logs one structured line per request. Runs inside the HTTP observation scope
- * (default filter order is after Spring's ServerHttpObservationFilter), so the
- * MDC carries traceId/spanId and the log line is correlated with the trace.
+ * (Spring's ServerHttpObservationFilter registers at HIGHEST_PRECEDENCE + 1, while a
+ * plain @Component filter defaults to lowest precedence), so by the time this filter
+ * runs the MDC already carries traceId/spanId and the log line is trace-correlated.
+ *
+ * The emitted line (method/path/status/duration_ms plus trace_id/span_id added by the
+ * JSON encoder) is the entry point for log→trace correlation: paste its trace_id into
+ * Grafana Tempo and the exact request opens (docs/study-guide.md, checkpoint 7).
  */
 @Component
 public class RequestLoggingFilter extends OncePerRequestFilter {

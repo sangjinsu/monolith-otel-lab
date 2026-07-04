@@ -1,18 +1,20 @@
 spring:
   application:
-    name: monolith-otel-lab
+    name: monolith-otel-lab   # becomes the OTel resource attribute `service.name`
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:orders}
     username: ${DB_USERNAME:orders}
     password: ${DB_PASSWORD:orders}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: update        # lab convenience; real projects should use migrations (Flyway etc.)
     open-in-view: false
     properties:
       hibernate:
         format_sql: false
   jackson:
+    # JSON uses snake_case (user_id, order_id) while Java stays camelCase — the
+    # serialization concern is handled globally instead of @JsonProperty on every DTO.
     property-naming-strategy: SNAKE_CASE
     default-property-inclusion: non_null
 
@@ -20,27 +22,35 @@ server:
   port: 8080
   shutdown: graceful
 
-# Observability: Micrometer Observation -> Tracing(OTLP) + Actuator Prometheus metrics.
+# Observability wiring (docs/architecture.md §5 has the full config-file map).
+# Trace path : Micrometer Observation -> OTLP push -> Collector -> Tempo.
+# Metric path: Micrometer -> /actuator/prometheus, pulled by Prometheus every 5s.
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus
+        include: health,info,prometheus   # /actuator/prometheus is the Prometheus scrape target
   endpoint:
     health:
       probes:
         enabled: true
   opentelemetry:
+    # Attached to every span/metric; together with service.name above this identifies
+    # the service in Grafana (OTel resource attributes).
     resource-attributes:
       service.version: 0.1.0
       deployment.environment: local
   metrics:
     distribution:
       percentiles-histogram:
+        # Emit _bucket series so histogram_quantile(0.95, ...) works in Prometheus.
+        # Remove this and the dashboard p95 panel shows "No data" — try it.
         http.server.requests: true
   tracing:
     sampling:
-      probability: ${OTEL_TRACES_SAMPLER_RATIO:1.0}
+      probability: ${OTEL_TRACES_SAMPLER_RATIO:1.0}   # 1.0 = record every trace (lab); lower it in production
   otlp:
     tracing:
+      # Where spans are pushed (OTLP over HTTP). docker-compose overrides this via
+      # OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318/v1/traces
       endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://localhost:4318/v1/traces}
