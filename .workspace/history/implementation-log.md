@@ -101,3 +101,19 @@ Verification:
     (deep-dive §8 예시·trace-success.png와 동일 trace)
 Next: 커밋+push. Optional Extensions(Loki/Pyroscope/Jaeger/Modulith)는 백로그.
 ```
+
+### 2026-07-04 (7) — make up 포터빌리티 수정 (compose 자동 감지)
+
+```text
+Task: 사용자 리포트 — `make up`이 "unknown flag: --build"로 실패
+Root Cause: ~/.docker/cli-plugins/docker-compose가 제거된 Docker Desktop을 가리키는
+  깨진 심링크(2023-05) → docker CLI가 compose 플러그인 로드 실패.
+Files Changed:
+  - Makefile: COMPOSE ?= $(shell docker compose version ... && echo docker compose || echo docker-compose)
+    — 플러그인/단독 바이너리 자동 감지 (override는 기존대로 COMPOSE= 로 가능)
+  - README.md: 자동 감지 노트, docs/study-guide.md: FAQ 행 추가("unknown flag: --build")
+  - (환경, repo 외) 깨진 심링크를 /opt/homebrew/lib/docker/cli-plugins/docker-compose로 교체
+Verification: docker compose version 5.2.0 OK, make -n up → "docker compose up --build",
+  폴백 분기/수동 override 확인, docker compose config --services 6개 파싱 OK.
+Next: 없음.
+```

@@ -67,7 +67,8 @@ curl localhost:8080/healthz        # {"status":"ok"}
 ```
 
 > Docker 런타임이 필요하다. Docker Desktop을 실행하거나 colima를 사용한다면 `colima start` 후 진행한다.
-> 다른 런타임을 쓰면 `make up COMPOSE="nerdctl compose"` 처럼 override할 수 있다.
+> Makefile이 `docker compose`(플러그인)와 `docker-compose`(단독 바이너리)를 **자동 감지**한다.
+> 다른 런타임은 `make up COMPOSE="nerdctl compose"` 처럼 override할 수 있다.
 
 ## Generate Traffic
 

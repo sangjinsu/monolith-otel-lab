@@ -157,6 +157,7 @@ make down        # 볼륨 포함 삭제 (-v)
 | 요청 직후 trace가 안 보임 | BatchSpanProcessor가 ~5초 배치 전송 → 몇 초 기다렸다 재검색 |
 | 예전 trace가 사라짐 | Tempo `block_retention: 1h` (tempo.yaml) → `make load`로 새로 생성 |
 | `make up`에서 8080 충돌 | `make up APP_PORT=18080` (§3) |
+| `make up`에서 `unknown flag: --build` | docker CLI가 compose 플러그인을 못 찾는 환경(예: 제거된 Docker Desktop의 깨진 플러그인 심링크). Makefile이 `docker-compose`로 자동 폴백한다. 수동 지정: `make up COMPOSE=docker-compose` |
 | p95 패널이 No data | `percentiles-histogram` 설정 확인 — `_bucket` 시계열이 있어야 `histogram_quantile` 동작 |
 | Grafana 첫 로그인에서 비밀번호 변경 요구 | 실험 환경이므로 Skip 해도 무방 |
 
