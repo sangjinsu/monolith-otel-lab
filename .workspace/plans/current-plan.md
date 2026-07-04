@@ -2,8 +2,8 @@
 
 ## Current Phase
 
-Phase 2 완료: 학습자료 계층 추가 (2026-07-04). 프로젝트는 "실행 가능한 관측성 lab" +
-"읽고 실습하는 교재" 두 역할을 모두 갖춤.
+Phase 4 완료: Tempo span metrics 추가 (2026-07-04).
+프로젝트는 "실행 가능한 관측성 lab" + "읽고 실습하는 교재" 두 역할을 모두 갖춤.
 
 ## Done
 
@@ -18,12 +18,23 @@ Phase 2 완료: 학습자료 계층 추가 (2026-07-04). 프로젝트는 "실행
   - [x] 교육용 코드 주석(영어) + 테스트 4클래스 헤더
   - [x] LICENSE(MIT) + GitHub topics 9종
   - [x] 검증: gradlew test 12 PASS, 링크 전수, 라이브 체크포인트 재실행
+- [x] Phase 3 (2026-07-04): 로컬 8080 충돌 회피
+  - [x] docker-compose app host port 기본값을 10080으로 변경
+  - [x] scripts/load.sh와 README 실행 예시를 10080 기준으로 갱신
+  - [x] .workspace handoff/검증 문서 갱신
+- [x] Phase 4 (2026-07-04): Tempo span metrics
+  - [x] Tempo metrics-generator + span-metrics processor 설정
+  - [x] Prometheus remote write receiver + exemplar storage 설정
+  - [x] Grafana datasource/dashboard에 span metrics 연결
+  - [x] README/docs/.workspace 설계 문서 갱신
+  - [x] runtime Prometheus query로 `traces_spanmetrics_*` 검증
 
 ## Backlog (Could Have)
 
 - Loki(로그 수집·양방향 점프), Pyroscope(프로파일링), Jaeger(백엔드 교체 실험),
   Spring Modulith 비교 — AGENTS.md Optional Extensions
 - CamelCase span 이름 유지 커스텀 handler (study-guide 연습문제 6 — 학습자 몫으로 남김)
+- Span metrics 기반 Grafana alert rule provisioning
 - colima 환경 Testcontainers 활성화
 
 ## Blockers
@@ -32,4 +43,4 @@ Phase 2 완료: 학습자료 계층 추가 (2026-07-04). 프로젝트는 "실행
 
 ## Next Action
 
-없음 (요청 대기). 새 작업 시작 전 prompts/agent-handoff.md 참조.
+없음.

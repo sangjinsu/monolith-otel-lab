@@ -7,6 +7,12 @@ datasources:
     url: http://prometheus:9090
     uid: prometheus
     isDefault: true
+    jsonData:
+      exemplarTraceIdDestinations:
+        - name: traceID
+          datasourceUid: tempo
+        - name: trace_id
+          datasourceUid: tempo
 
   - name: Tempo
     type: tempo
@@ -15,3 +21,17 @@ datasources:
     uid: tempo
     jsonData:
       httpMethod: GET
+      tracesToMetrics:
+        datasourceUid: prometheus
+        spanStartTimeShift: "-5m"
+        spanEndTimeShift: "5m"
+        tags:
+          - key: service.name
+            value: service
+          - key: name
+            value: span_name
+        queries:
+          - name: Span request rate
+            query: sum(rate(traces_spanmetrics_calls_total{$$__tags}[5m]))
+          - name: Span p95 latency
+            query: histogram_quantile(0.95, sum(traces_spanmetrics_latency_bucket{$$__tags}) by (le))

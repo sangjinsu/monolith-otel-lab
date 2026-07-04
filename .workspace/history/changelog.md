@@ -15,12 +15,14 @@
 ### Observability
 - Tracing: Micrometer Observation (`@Observed`) -> Micrometer Tracing (OTel bridge) -> OTLP -> Collector -> Tempo.
 - Metrics: Micrometer + Actuator Prometheus (`order.created.count`, `order.failed.count`, `http.server.requests`).
+- Span metrics: Tempo metrics-generator -> Prometheus remote write (`traces_spanmetrics_*` RED metrics).
 - Logging: Logback structured JSON with `trace_id` / `span_id`; per-request access log filter.
 
 ### Infra
 - Dockerfile (multi-stage, JRE 21, non-root), docker-compose (app, postgres, otel-collector, tempo, prometheus, grafana).
-- Grafana provisioning: Tempo + Prometheus datasources, 4-panel dashboard.
+- Grafana provisioning: Tempo + Prometheus datasources, dashboard with Actuator metrics + Tempo span metrics panels.
 - Makefile (`COMPOSE ?=`, `APP_PORT` overridable), scripts/load.sh, README.
+- App host port defaults to `10080` to avoid common local `8080` conflicts; container-internal app port remains `8080`.
 
 ### Verification (2026-06-29)
 - `./gradlew test` — 12 tests PASS.
@@ -28,7 +30,7 @@
 
 ### ADRs
 - 0001 scope, 0002 monolith/Java packages, 0003 otel/tempo + actuator metrics,
-  0004 Micrometer observability, 0005 PostgreSQL+JPA, 0006 Java/Spring Boot.
+  0004 Micrometer observability, 0005 PostgreSQL+JPA, 0006 Java/Spring Boot, 0007 Tempo span metrics.
 
 ### Learning material (2026-07-04)
 - docs/: architecture(구성도 4종 mermaid + 설정 파일 지도), observability-deep-dive(동작 원리),

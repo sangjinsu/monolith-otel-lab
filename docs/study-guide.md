@@ -61,7 +61,7 @@ make up        # 첫 실행은 이미지 빌드로 수 분 소요
 
 ### CP2 — 헬스 체크
 ```bash
-curl localhost:8080/healthz
+curl localhost:10080/healthz
 ```
 **기대**: `{"status":"ok"}`
 

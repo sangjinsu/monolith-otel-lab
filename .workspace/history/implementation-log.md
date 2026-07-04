@@ -117,3 +117,40 @@ Verification: docker compose version 5.2.0 OK, make -n up → "docker compose up
   폴백 분기/수동 override 확인, docker compose config --services 6개 파싱 OK.
 Next: 없음.
 ```
+
+### 2026-07-04 (8) — make up app 기본 포트 변경
+
+```text
+Task: 사용자 리포트 — host 8080이 이미 점유되어 `make up` app 컨테이너 바인딩 실패
+Root Cause: 다른 로컬 컨테이너가 0.0.0.0:8080을 사용 중인 상태에서 app 기본 host port도 8080으로 설정됨.
+Files Changed:
+  - docker-compose.yml: app host port 기본값을 ${APP_PORT:-10080}:8080으로 변경
+  - scripts/load.sh: 기본 BASE_URL을 http://localhost:10080으로 변경
+  - README.md, .workspace 문서: 실행 URL과 포트 정책 갱신
+Decision Summary: 컨테이너 내부 포트와 Prometheus scrape(app:8080)는 유지하고,
+  사용자가 접근하는 host port 기본값만 10080으로 분리. APP_PORT override는 유지.
+Verification: docker compose config에서 published 10080 확인, ./gradlew test --rerun-tasks BUILD SUCCESSFUL,
+  docker compose up -d --build 후 app 0.0.0.0:10080->8080/tcp 확인,
+  curl http://localhost:10080/healthz -> {"status":"ok"}, make load exit 0.
+Next: 없음.
+```
+
+### 2026-07-04 (9) — Tempo span metrics 추가
+
+```text
+Task: Tempo metrics-generator 기반 span metrics 추가
+Files Changed:
+  - deploy/tempo/tempo.yaml: metrics_generator + span-metrics processor + Prometheus remote_write
+  - deploy/prometheus/prometheus.yml, docker-compose.yml: remote write receiver + exemplar storage
+  - deploy/grafana provisioning/dashboard: Prometheus exemplars, Tempo tracesToMetrics, span metrics panels 3개
+  - README.md, docs/*, .workspace 문서: span metrics 설명과 검증 결과 갱신
+Decision Summary: 앱 metric은 기존 Actuator scrape를 유지하고, trace에서 파생되는 span RED metric은
+  Tempo가 생성해 Prometheus로 remote write한다. Alert provisioning은 이번 범위에서 제외.
+Verification:
+  - jq/YAML/docker compose config 정적 검증 PASS
+  - docker compose up -d --force-recreate grafana 후 Grafana API dashboard panel 5~7 확인
+  - Prometheus metric names: traces_spanmetrics_calls_total, traces_spanmetrics_latency_bucket/count/sum, traces_spanmetrics_size_total
+  - PromQL: payment-client.authorize STATUS_CODE_ERROR=1, span p95 latency query returns 8 span series
+  - ./gradlew test --rerun-tasks BUILD SUCCESSFUL, git diff --check PASS
+Next: 없음.
+```

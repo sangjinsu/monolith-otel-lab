@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="${BASE_URL:-http://localhost:8080}"
+BASE_URL="${BASE_URL:-http://localhost:10080}"
 COUNT="${COUNT:-20}"
 
 echo "sending ${COUNT} successful orders to ${BASE_URL}/orders ..."

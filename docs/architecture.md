@@ -14,7 +14,7 @@ flowchart TB
     CLIENT([curl / scripts/load.sh])
 
     subgraph host["docker compose (로컬)"]
-        APP["app — Spring Boot 3.4.5<br/>컨테이너 :8080 (호스트 ${APP_PORT:-8080})"]
+        APP["app — Spring Boot 3.4.5<br/>컨테이너 :8080 (호스트 ${APP_PORT:-10080})"]
         PG[("postgres:16<br/>:5432")]
         COL["otel-collector-contrib 0.110<br/>:4317 gRPC · :4318 HTTP"]
         TEMPO["tempo 2.6.1<br/>:3200 (내부 전용)"]
@@ -27,6 +27,7 @@ flowchart TB
     APP == "① trace · OTLP HTTP push<br/>POST /v1/traces" ==> COL
     COL == "OTLP gRPC :4317" ==> TEMPO
     PROM -. "② metric · pull (5s)<br/>GET /actuator/prometheus" .-> APP
+    TEMPO -. "②b span metrics · remote write<br/>POST /api/v1/write" .-> PROM
     APP -- "③ log · stdout JSON<br/>(trace_id / span_id 포함)" --> LOGS[["docker logs"]]
     GRAF -->|trace 조회| TEMPO
     GRAF -->|metric 조회| PROM
@@ -38,6 +39,7 @@ flowchart TB
 |---|---|---|---|
 | ① Trace | **push** (앱이 보냄) | app → OTLP HTTP → Collector → Tempo | Collector를 경유하면 backend 교체가 쉬움 ([ADR-0003](../.workspace/decisions/ADR-0003-otel-tempo-stack.md)) |
 | ② Metric | **pull** (Prometheus가 긁어감) | Prometheus → app `/actuator/prometheus` | Spring Actuator의 표준 방식 ([ADR-0004](../.workspace/decisions/ADR-0004-observability-micrometer.md)) |
+| ②b Span Metric | **remote write** (Tempo가 보냄) | Tempo metrics-generator → Prometheus `/api/v1/write` | trace span에서 RED 지표를 만들기 위함 ([ADR-0007](../.workspace/decisions/ADR-0007-tempo-span-metrics.md)) |
 | ③ Log | stdout | app → docker logs | 로그 자체는 수집기 없이, `trace_id`로 trace와 **상관**만 유지 |
 
 push와 pull, Collector 경유와 직접 노출 — 실무에서 마주치는 두 패턴을 한 프로젝트에서 비교할 수 있다.
@@ -162,11 +164,12 @@ sequenceDiagram
 | 앱 → Collector (trace) | [`src/main/resources/application.yml`](../src/main/resources/application.yml) | `management.otlp.tracing.endpoint`, `management.tracing.sampling.probability` |
 | Collector 수신/전달 | [`deploy/otel-collector/config.yaml`](../deploy/otel-collector/config.yaml) | `receivers.otlp`, `exporters.otlp/tempo`, `pipelines.traces` |
 | Tempo 수신/저장 | [`deploy/tempo/tempo.yaml`](../deploy/tempo/tempo.yaml) | `distributor.receivers.otlp`, `storage.trace.local`, `compactor.compaction.block_retention`(**1h** — 오래된 trace는 사라진다!) |
+| Span metrics 생성 | [`deploy/tempo/tempo.yaml`](../deploy/tempo/tempo.yaml) | `metrics_generator`, `overrides.defaults.metrics_generator.processors: [span-metrics]` |
 | 메트릭 노출 | [`src/main/resources/application.yml`](../src/main/resources/application.yml) | `management.endpoints.web.exposure`, `metrics.distribution.percentiles-histogram` |
-| 메트릭 수집 | [`deploy/prometheus/prometheus.yml`](../deploy/prometheus/prometheus.yml) | `scrape_configs` → `app:8080` (5s) |
+| 메트릭 수집/수신 | [`deploy/prometheus/prometheus.yml`](../deploy/prometheus/prometheus.yml), [`docker-compose.yml`](../docker-compose.yml) | `scrape_configs` → `app:8080` (5s), `--web.enable-remote-write-receiver` |
 | 로그 ↔ trace 상관 | [`src/main/resources/logback-spring.xml`](../src/main/resources/logback-spring.xml) | MDC `traceId`/`spanId` → JSON 필드 `trace_id`/`span_id` 매핑 |
 | Grafana 자동 설정 | [`deploy/grafana/provisioning/`](../deploy/grafana/provisioning/) | datasource uid `tempo`/`prometheus`, 대시보드 [`monolith-otel-lab.json`](../deploy/grafana/dashboards/monolith-otel-lab.json) |
-| 전체 조립 | [`docker-compose.yml`](../docker-compose.yml) | 서비스 6개, `OTEL_EXPORTER_OTLP_ENDPOINT`, `${APP_PORT:-8080}` |
+| 전체 조립 | [`docker-compose.yml`](../docker-compose.yml) | 서비스 6개, `OTEL_EXPORTER_OTLP_ENDPOINT`, `${APP_PORT:-10080}` |
 
 ---
 

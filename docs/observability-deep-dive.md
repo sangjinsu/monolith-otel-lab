@@ -160,6 +160,25 @@ Micrometer는 기본으로 bucket을 내보내지 **않으므로** application.y
 `management.metrics.distribution.percentiles-histogram.http.server.requests: true`를 켰다.
 이 설정을 지우면 대시보드 p95 패널이 "No data"가 된다 — 직접 실험해볼 것.
 
+### Trace에서 파생되는 span metrics
+
+Actuator metric과 별개로, Tempo `metrics_generator`도 들어오는 span을 집계해 RED metrics를 만든다.
+이 경로는 app이 metric을 노출하는 것이 아니라 Tempo가 span을 보고 Prometheus remote write endpoint로 보낸다.
+
+대표 metric:
+
+```text
+traces_spanmetrics_calls_total
+traces_spanmetrics_latency_bucket / _sum / _count
+traces_spanmetrics_size_total
+```
+
+기본 label은 `service`, `span_name`, `span_kind`, `status_code`다. 예를 들어
+`payment-client.authorize` 실패 span은 `status_code="STATUS_CODE_ERROR"`인 call count와 latency bucket에 반영된다.
+이 metric은 span 단위 RED 지표와 alerting 실험의 기반이지만, trace sampling 비율이 낮으면 span metrics도 샘플링 영향을 받는다.
+초기 데모에서는 remote write 첫 샘플이 이미 누적 histogram 값으로 들어오므로, dashboard p95 패널은
+`histogram_quantile(0.95, sum(traces_spanmetrics_latency_bucket{...}) by (le, span_name))`처럼 누적 bucket을 사용한다.
+
 ---
 
 ## 8. Log ↔ Trace 상관 — MDC 한 줄의 마법
@@ -208,7 +227,7 @@ Micrometer는 기본으로 bucket을 내보내지 **않으므로** application.y
 
 ## 10. 더 읽을거리
 
-- 설계 결정 기록: [.workspace/decisions/](../.workspace/decisions/) (ADR 0001~0006)
+- 설계 결정 기록: [.workspace/decisions/](../.workspace/decisions/) (ADR 0001~0007)
 - 관측성 설계 원칙: [.workspace/project/observability-design.md](../.workspace/project/observability-design.md)
 - 검증 기록(실측 데이터): [.workspace/validation/test-results.md](../.workspace/validation/test-results.md)
 - 공식 문서: [Micrometer Observation](https://docs.micrometer.io/micrometer/reference/observation.html) ·

@@ -469,7 +469,7 @@ pyroscope
 가능하면 다음 포트를 사용한다.
 
 ```text
-app:             http://localhost:8080
+app:             http://localhost:10080
 grafana:         http://localhost:3000
 prometheus:      http://localhost:9090
 postgres:        localhost:5432
@@ -735,13 +735,13 @@ make load    -> scripts/load.sh 실행
 set -euo pipefail
 
 for i in {1..20}; do
-  curl -s -X POST "http://localhost:8080/orders" \
+  curl -s -X POST "http://localhost:10080/orders" \
     -H "Content-Type: application/json" \
     -d '{"user_id":"user-1","items":[{"sku":"item-1","quantity":2}]}' \
     > /dev/null
 done
 
-curl -s -X POST "http://localhost:8080/orders?fail_payment=true" \
+curl -s -X POST "http://localhost:10080/orders?fail_payment=true" \
   -H "Content-Type: application/json" \
   -d '{"user_id":"user-1","items":[{"sku":"item-1","quantity":2}]}' \
   || true
@@ -957,7 +957,7 @@ make load
 확인 URL:
 
 ```text
-App:        http://localhost:8080/healthz
+App:        http://localhost:10080/healthz
 Grafana:    http://localhost:3000
 Prometheus: http://localhost:9090
 ```

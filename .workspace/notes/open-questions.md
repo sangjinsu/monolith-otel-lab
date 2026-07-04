@@ -11,6 +11,9 @@
 - Grafana: datasource + 최소 대시보드 provisioning.
 - 컨테이너 런타임: docker compose (이 환경은 `docker-compose` 바이너리; Makefile `COMPOSE` 변수로 override).
 - 통합 검증(2026-06-29): functional/trace/metric/log 전부 PASS (validation/test-results.md).
+- App host port: 로컬 8080 충돌 회피를 위해 기본 host port를 **10080**으로 변경.
+  컨테이너 내부 포트와 Prometheus scrape 대상은 `app:8080` 유지.
+- AGENTS.md: 사용자 직접 지시에 따라 app host URL 예시를 `localhost:10080`으로 갱신.
 
 ## Open / Follow-up
 
@@ -18,8 +21,6 @@
   `OrderController.createOrder` -> `order-controller.create-order`로 보인다. 계층 식별에는 충분.
   정확히 CamelCase로 표기하려면 커스텀 `ObservationConvention`(또는 ObservationFilter)로 span name을
   지정해야 한다. (실험 목적에는 현재로 충분 — 후속 개선 후보)
-- **App host port**: 로컬 8080이 ssh 터널/다른 프로젝트 컨테이너로 점유될 수 있어 docker-compose에서
-  `${APP_PORT:-8080}`로 파라미터화했다. 기본은 8080, 충돌 시 `make up APP_PORT=18080`.
 - **Testcontainers on colima**: docker 전략 자동 탐지가 실패하여 JPA 슬라이스 테스트는 H2로 수행 중.
   colima에서 Testcontainers를 쓰려면 DOCKER_HOST / TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE 등 추가 설정 필요.
 - Loki / Pyroscope / Jaeger 비교 / Spring Modulith: Could Have(미착수).

@@ -7,7 +7,7 @@
 ## Request
 
 ```bash
-curl -X POST "http://localhost:8080/orders?fail_payment=true" \
+curl -X POST "http://localhost:10080/orders?fail_payment=true" \
   -H "Content-Type: application/json" \
   -d '{"user_id":"user-1","items":[{"sku":"item-1","quantity":2}]}'
 ```

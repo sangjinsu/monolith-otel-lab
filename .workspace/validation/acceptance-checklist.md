@@ -1,6 +1,6 @@
 # Acceptance Checklist
 
-(검증 완료: 2026-06-29 — docker compose 통합 스택, app host port 18080)
+(검증 완료: 2026-07-04 — docker compose 통합 스택, app host port 10080)
 
 ## Functional
 
@@ -23,10 +23,12 @@
 - [x] Logs include trace_id
 - [x] Logs include span_id
 - [x] Prometheus exposes request/order metrics (order_created_count_total, order_failed_count_total, http_server_requests_*)
+- [x] Prometheus receives Tempo span metrics (traces_spanmetrics_calls_total, traces_spanmetrics_latency_*)
+- [x] Grafana dashboard includes span metrics panels
 
 ## Developer Experience
 
-- [x] make up works (docker compose up --build; `APP_PORT` overridable for port conflicts)
+- [x] make up works (docker compose up --build; default app host port 10080, `APP_PORT` overridable)
 - [x] make down works (docker compose down -v)
 - [x] make load works (20 ok + 1 fail)
 - [x] README explains how to run

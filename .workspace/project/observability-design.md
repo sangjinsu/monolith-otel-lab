@@ -8,7 +8,8 @@
 
 Micrometer Observation 모델: 하나의 Observation이 span과 metric을 함께 생성한다.
 Micrometer Tracing(OpenTelemetry bridge) + OTLP exporter로 Collector에 trace를 보내고,
-metric은 Actuator Prometheus registry로 노출한다. (decisions/ADR-0004)
+앱 metric은 Actuator Prometheus registry로 노출한다. Tempo metrics-generator는 수신 span에서
+span metrics를 생성해 Prometheus로 remote write한다. (decisions/ADR-0004, ADR-0007)
 
 ## Trace Flow
 
@@ -64,7 +65,10 @@ payment.result
 
 ## Metrics
 
-방식: **Micrometer + Actuator Prometheus** (앱 /actuator/prometheus를 Prometheus가 직접 scrape).
+방식:
+
+- **Micrometer + Actuator Prometheus**: 앱 `/actuator/prometheus`를 Prometheus가 직접 scrape.
+- **Tempo span metrics**: Tempo metrics-generator가 span에서 RED metrics를 생성해 Prometheus `/api/v1/write`로 remote write.
 
 필수 metrics:
 
@@ -75,6 +79,16 @@ order.failed.count          (커스텀 Counter)
 ```
 
 Prometheus 표기 예: http_server_requests_seconds_count, order_created_count_total.
+
+Span metrics:
+
+```text
+traces_spanmetrics_calls_total
+traces_spanmetrics_latency_bucket / _sum / _count
+traces_spanmetrics_size_total
+```
+
+기본 label: service, span_name, span_kind, status_code.
 
 ## Logs
 

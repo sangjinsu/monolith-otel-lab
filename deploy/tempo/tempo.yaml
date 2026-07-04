@@ -17,6 +17,17 @@ compactor:
   compaction:
     block_retention: 1h
 
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
+      cluster: monolith-otel-lab
+  storage:
+    path: /var/tempo/generator/wal
+    remote_write:
+      - url: http://prometheus:9090/api/v1/write
+        send_exemplars: true
+
 storage:
   trace:
     backend: local
@@ -24,6 +35,11 @@ storage:
       path: /var/tempo/blocks
     wal:
       path: /var/tempo/wal
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors: [span-metrics]
 
 usage_report:
   reporting_enabled: false

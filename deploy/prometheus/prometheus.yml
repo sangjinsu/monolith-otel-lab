@@ -2,6 +2,10 @@ global:
   scrape_interval: 5s
   evaluation_interval: 5s
 
+storage:
+  exemplars:
+    max_exemplars: 10000
+
 scrape_configs:
   - job_name: 'monolith-otel-lab-app'
     metrics_path: /actuator/prometheus
