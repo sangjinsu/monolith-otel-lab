@@ -169,6 +169,7 @@ sequenceDiagram
 | 메트릭 수집/수신 | [`deploy/prometheus/prometheus.yml`](../deploy/prometheus/prometheus.yml), [`docker-compose.yml`](../docker-compose.yml) | `scrape_configs` → `app:8080` (5s), `--web.enable-remote-write-receiver` |
 | 로그 ↔ trace 상관 | [`src/main/resources/logback-spring.xml`](../src/main/resources/logback-spring.xml) | MDC `traceId`/`spanId` → JSON 필드 `trace_id`/`span_id` 매핑 |
 | Grafana 자동 설정 | [`deploy/grafana/provisioning/`](../deploy/grafana/provisioning/) | datasource uid `tempo`/`prometheus`, 대시보드 [`monolith-otel-lab.json`](../deploy/grafana/dashboards/monolith-otel-lab.json) |
+| Alerting | [`deploy/grafana/provisioning/alerting/`](../deploy/grafana/provisioning/alerting/) | span metrics 기반 Grafana managed alert rule |
 | 전체 조립 | [`docker-compose.yml`](../docker-compose.yml) | 서비스 6개, `OTEL_EXPORTER_OTLP_ENDPOINT`, `${APP_PORT:-10080}` |
 
 ---

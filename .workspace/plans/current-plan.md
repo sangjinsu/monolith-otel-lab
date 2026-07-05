@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 4 완료: Tempo span metrics 추가 (2026-07-04).
+Phase 5 완료: Grafana alert 테스트 추가 (2026-07-04).
 프로젝트는 "실행 가능한 관측성 lab" + "읽고 실습하는 교재" 두 역할을 모두 갖춤.
 
 ## Done
@@ -12,7 +12,7 @@ Phase 4 완료: Tempo span metrics 추가 (2026-07-04).
 - [x] Phase 2 (2026-07-03~04): 학습자료 업그레이드
   - [x] docs/architecture.md — 구성도 4종(mermaid) + 설정 파일 지도
   - [x] docs/observability-deep-dive.md — @Observed→Tempo 체인, kebab-case 원리, 실측 예
-  - [x] docs/study-guide.md — 읽기 순서, 체크포인트 8, 연습문제 6, FAQ
+  - [x] docs/study-guide.md — 읽기 순서, 체크포인트 9, 연습문제 6, FAQ
   - [x] docs/images/ — Grafana 실캡처 3장 (dashboard / trace-success / trace-failure)
   - [x] README 학습 섹션 + 실제 span 이름, AGENTS.md 정규화 노트
   - [x] 교육용 코드 주석(영어) + 테스트 4클래스 헤더
@@ -28,13 +28,17 @@ Phase 4 완료: Tempo span metrics 추가 (2026-07-04).
   - [x] Grafana datasource/dashboard에 span metrics 연결
   - [x] README/docs/.workspace 설계 문서 갱신
   - [x] runtime Prometheus query로 `traces_spanmetrics_*` 검증
+- [x] Phase 5 (2026-07-04): Grafana alert 테스트
+  - [x] span metrics 기반 Grafana managed alert rule provisioning 추가
+  - [x] README/docs/.workspace alert 테스트 절차 갱신
+  - [x] Grafana API로 rule provisioning 확인
+  - [x] `make load`로 Firing 상태 검증
 
 ## Backlog (Could Have)
 
 - Loki(로그 수집·양방향 점프), Pyroscope(프로파일링), Jaeger(백엔드 교체 실험),
   Spring Modulith 비교 — AGENTS.md Optional Extensions
 - CamelCase span 이름 유지 커스텀 handler (study-guide 연습문제 6 — 학습자 몫으로 남김)
-- Span metrics 기반 Grafana alert rule provisioning
 - colima 환경 Testcontainers 활성화
 
 ## Blockers

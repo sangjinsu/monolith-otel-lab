@@ -1,6 +1,61 @@
 # Test Results
 
-## Latest Result — 2026-07-04 (Tempo span metrics)
+## Latest Result — 2026-07-04 (Grafana alert test)
+
+### Static configuration validation
+
+```text
+Command: ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_file(path); puts "OK #{path}" }' deploy/grafana/provisioning/alerting/span-metrics-alerts.yaml deploy/grafana/provisioning/datasources/datasources.yaml deploy/grafana/provisioning/dashboards/dashboards.yaml docker-compose.yml
+Result:  PASS
+
+Command: docker compose config
+Result:  PASS
+
+Command: git diff --check
+Result:  PASS
+```
+
+### Grafana provisioning verification
+
+```text
+Command: docker compose up -d --force-recreate grafana
+Result:  Grafana restarted and provisioning reloaded
+
+Command: curl -fsS -u admin:admin http://localhost:3000/api/v1/provisioning/alert-rules
+Result:  uid=payment-span-errors, title="Payment authorization span errors",
+         ruleGroup=span-metrics-alerts
+
+Command: curl -fsS -u admin:admin http://localhost:3000/api/dashboards/uid/monolith-otel-lab
+Result:  dashboard title "monolith-otel-lab" returned; dashboard provisioning not broken
+```
+
+### Alert firing verification
+
+```text
+Command: PromQL sum(increase(traces_spanmetrics_calls_total{service="monolith-otel-lab",span_name="payment-client.authorize",status_code="STATUS_CODE_ERROR"}[2m]))
+Result:  before make load: 0
+
+Command: make load
+Result:  sent 20 successful orders and 1 failing payment request; exit 0
+
+Command: same PromQL after make load
+Result:  value > 1
+
+Command: curl -fsS -u admin:admin http://localhost:3000/api/prometheus/grafana/api/v1/alerts
+Result:  Payment authorization span errors state=Alerting, activeAt=2026-07-04T05:31:50Z
+
+Command: curl -fsS -u admin:admin http://localhost:3000/api/alertmanager/grafana/api/v2/alerts
+Result:  Payment authorization span errors status.state=active
+```
+
+### Unit / slice tests
+
+```text
+Command: ./gradlew test --rerun-tasks
+Result:  BUILD SUCCESSFUL in 5s; 4 actionable tasks executed
+```
+
+## Previous Result — 2026-07-04 (Tempo span metrics)
 
 ### Static configuration validation
 

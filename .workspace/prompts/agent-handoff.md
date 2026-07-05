@@ -1,10 +1,11 @@
 # Agent Handoff
 
-## Current State — 2026-07-04 (Phase 4: Tempo span metrics 완료)
+## Current State — 2026-07-04 (Phase 5: Grafana alert 테스트 완료)
 
 구현·검증·GitHub 공개(Phase 1)에 이어, 저장소를 **학습 교재**로 쓸 수 있는 문서 계층을 추가했다.
 Phase 3에서는 로컬 8080 충돌 회피를 위해 기본 app host port를 10080으로 변경했다.
 Phase 4에서는 Tempo metrics-generator 기반 span metrics를 추가했고 Prometheus/Grafana에서 검증했다.
+Phase 5에서는 Grafana managed alert rule을 추가해 결제 실패 span metrics로 Alerting 상태를 재현했다.
 
 ## What Exists
 
@@ -12,6 +13,7 @@ Phase 4에서는 Tempo metrics-generator 기반 span metrics를 추가했고 Pro
   흐름 Reserve→Authorize→Insert(실패 시 미저장). PostgreSQL + Spring Data JPA.
 - **관측성**: @Observed(Micrometer Observation) → OTel bridge → OTLP HTTP → Collector → Tempo.
   메트릭은 Actuator /actuator/prometheus(Prometheus pull)와 Tempo span metrics(Prometheus remote write)를 함께 사용.
+  alerting은 Grafana managed alerting으로 `payment-span-errors` rule을 provisioning.
   로그 JSON + MDC trace_id/span_id.
 - **스택**: docker-compose 6서비스. `make up/down/logs/test/load`. 기본 app host port는 10080이며 APP_PORT로 override.
 - **학습 문서**: docs/{architecture, observability-deep-dive, study-guide}.md(한국어) +
@@ -40,6 +42,9 @@ Phase 4에서는 Tempo metrics-generator 기반 span metrics를 추가했고 Pro
   확인. `payment-client.authorize` error span count=1, span p95 latency query 8 series 반환.
 - Grafana dashboard에는 span metrics panel 3개가 provisioning됨:
   Span request rate by span, Span p95 latency by span, Span error rate by span.
+- Grafana alert rule 검증 완료:
+  `Payment authorization span errors` rule은 `make load`의 실패 결제 요청 후 Grafana ruler API에서
+  `Alerting`, Alertmanager API에서 `active`로 확인됨.
 - 라이브: PromQL 3종 반환, 성공 trace 6 spans(payment가 지연 지배), 실패 trace 5 spans
   (payment error + insert 부재), 로그 trace_id ↔ Tempo trace 상관 실측
   (56d2c61f... = deep-dive §8 예시 = trace-success.png 동일 trace)

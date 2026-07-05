@@ -81,7 +81,7 @@ Task: #8~#11 학습자료 계층 추가 (짜임새/구성도 리뷰 후속)
 Files Changed:
   - docs/architecture.md(구성도 4종 mermaid + 설정 파일 지도),
     docs/observability-deep-dive.md(동작 원리, kebab-case 원리, InstrumentationScope, 실측 로그↔trace),
-    docs/study-guide.md(읽기 순서, 체크포인트 8, 연습문제 6, FAQ) — 한국어
+    docs/study-guide.md(읽기 순서, 체크포인트 9, 연습문제 6, FAQ) — 한국어
   - docs/images/{dashboard,trace-success,trace-failure}.png — Grafana 실캡처(합계 ~334KB)
   - README.md(학습 가이드 섹션, 실제 kebab-case span 이름+주의 박스, docs 링크, License),
     AGENTS.md(Trace Design 정규화 노트)
@@ -152,5 +152,24 @@ Verification:
   - Prometheus metric names: traces_spanmetrics_calls_total, traces_spanmetrics_latency_bucket/count/sum, traces_spanmetrics_size_total
   - PromQL: payment-client.authorize STATUS_CODE_ERROR=1, span p95 latency query returns 8 span series
   - ./gradlew test --rerun-tasks BUILD SUCCESSFUL, git diff --check PASS
+Next: 없음.
+```
+
+### 2026-07-04 (10) — Grafana alert 테스트 추가
+
+```text
+Task: span metrics 기반 Grafana managed alert rule 추가
+Files Changed:
+  - deploy/grafana/provisioning/alerting/span-metrics-alerts.yaml
+  - README.md, docs/architecture.md, docs/study-guide.md
+  - .workspace 계획/설계/검증 문서
+Decision Summary: 외부 Alertmanager/Slack/Email은 붙이지 않고, Grafana UI/API에서
+  alert state transition을 확인하는 실험용 rule로 구성. 최근 2분 payment-client.authorize
+  STATUS_CODE_ERROR 증가분이 0보다 크면 Firing.
+Verification:
+  - YAML parse, docker compose config, git diff --check PASS
+  - Grafana API rule uid payment-span-errors 확인
+  - make load 후 PromQL query value > 1
+  - Grafana ruler API state Alerting, Alertmanager API state active 확인
 Next: 없음.
 ```

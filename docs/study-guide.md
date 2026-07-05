@@ -40,7 +40,7 @@ trace, span, root span, context propagation, OTLP, Collector, resource attribute
 
 ## 3. 포트 안내
 
-기본 포트는 `8080`이다. 이미 사용 중이면:
+기본 host 포트는 `10080`이다. 이미 사용 중이면:
 
 ```bash
 make up APP_PORT=18080                      # 호스트 포트만 변경 (컨테이너 내부는 8080 유지)
@@ -127,7 +127,24 @@ make logs        # 또는: docker compose logs app | grep '"status":201' | tail 
 **기대**: 방금 그 로그를 남긴 **바로 그 요청**의 trace가 열린다.
 실무 시나리오("에러 로그 발견 → trace 점프 → 병목 계층 식별")의 축소판이다.
 
-### CP8 — 정리
+### CP8 — span metrics 기반 alert 테스트
+```bash
+make load
+```
+
+1. Grafana → **Alerting** → **Alert rules**
+2. `Payment authorization span errors` rule을 연다.
+3. 필요하면 API로도 확인한다.
+
+```bash
+curl -fsS -u admin:admin http://localhost:3000/api/alertmanager/grafana/api/v2/alerts \
+  | jq '.[] | select(.labels.alertname=="Payment authorization span errors") | {labels,status}'
+```
+
+**기대**: `make load`의 실패 결제 요청 때문에 10~30초 안에 rule이 Firing으로 바뀐다.
+새 실패 요청이 없으면 최근 2분 window가 지나며 Normal로 돌아간다.
+
+### CP9 — 정리
 ```bash
 make down        # 볼륨 포함 삭제 (-v)
 ```
@@ -159,6 +176,7 @@ make down        # 볼륨 포함 삭제 (-v)
 | `make up`에서 8080 충돌 | `make up APP_PORT=18080` (§3) |
 | `make up`에서 `unknown flag: --build` | docker CLI가 compose 플러그인을 못 찾는 환경(예: 제거된 Docker Desktop의 깨진 플러그인 심링크). Makefile이 `docker-compose`로 자동 폴백한다. 수동 지정: `make up COMPOSE=docker-compose` |
 | p95 패널이 No data | `percentiles-histogram` 설정 확인 — `_bucket` 시계열이 있어야 `histogram_quantile` 동작 |
+| Alert가 바로 Firing 되지 않음 | Grafana rule interval(10s), Tempo metrics-generator, Prometheus remote write 지연 때문에 10~30초 기다린다. 그래도 안 되면 `make load`를 다시 실행 |
 | Grafana 첫 로그인에서 비밀번호 변경 요구 | 실험 환경이므로 Skip 해도 무방 |
 
 ---

@@ -25,6 +25,8 @@
 - [x] Prometheus exposes request/order metrics (order_created_count_total, order_failed_count_total, http_server_requests_*)
 - [x] Prometheus receives Tempo span metrics (traces_spanmetrics_calls_total, traces_spanmetrics_latency_*)
 - [x] Grafana dashboard includes span metrics panels
+- [x] Grafana alert rule for payment span errors is provisioned
+- [x] Failed payment traffic makes the Grafana alert fire
 
 ## Developer Experience
 

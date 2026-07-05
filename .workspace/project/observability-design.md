@@ -90,6 +90,12 @@ traces_spanmetrics_size_total
 
 기본 label: service, span_name, span_kind, status_code.
 
+## Alerting
+
+Grafana managed alerting을 사용해 span metrics 기반 실험 rule을 provisioning한다.
+현재 rule은 최근 2분 동안 `payment-client.authorize` span error가 1회 이상 증가하면 Firing 된다.
+외부 Slack/Email/Webhook 전송은 구성하지 않고, Grafana UI/API에서 상태 전이를 확인한다.
+
 ## Logs
 
 Logback structured JSON. Micrometer Tracing이 MDC에 traceId/spanId를 주입하면 JSON 로그에
