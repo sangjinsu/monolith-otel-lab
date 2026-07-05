@@ -39,6 +39,7 @@ Phase 6 완료: 로컬 Kubernetes 예제 추가 및 kind runtime 검증 (2026-07
   - [x] README/docs/.workspace k8s 실습 문서 갱신
   - [x] `kubectl apply --dry-run=client -k deploy` 검증
   - [x] `make k8s-up`, `make k8s-load` runtime 검증
+  - [x] 운영 구조에 가깝게 app/data/observability namespace 목적별 분리
 
 ## Backlog (Could Have)
 

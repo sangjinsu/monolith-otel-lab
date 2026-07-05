@@ -37,6 +37,7 @@
 - [x] make k8s-up works on local kind
 - [x] make k8s-load works against the kind stack
 - [x] Kubernetes Grafana/Prometheus endpoints are reachable on localhost
+- [x] Kubernetes resources are separated by purpose into app/data/observability namespaces
 
 ## Notes
 

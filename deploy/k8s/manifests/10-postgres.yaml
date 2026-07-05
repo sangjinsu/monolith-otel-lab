@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgres
-  namespace: monolith-otel-lab
+  namespace: monolith-otel-data
   labels:
     app.kubernetes.io/name: postgres
 spec:
@@ -18,7 +18,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres
-  namespace: monolith-otel-lab
+  namespace: monolith-otel-data
   labels:
     app.kubernetes.io/name: postgres
 spec:

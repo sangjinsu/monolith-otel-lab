@@ -15,18 +15,18 @@ generatorOptions:
 
 configMapGenerator:
   - name: grafana-datasources
-    namespace: monolith-otel-lab
+    namespace: monolith-otel-observability
     files:
       - datasources.yaml=grafana/provisioning/datasources/datasources.yaml
   - name: grafana-dashboard-provider
-    namespace: monolith-otel-lab
+    namespace: monolith-otel-observability
     files:
       - dashboards.yaml=grafana/provisioning/dashboards/dashboards.yaml
   - name: grafana-alerting
-    namespace: monolith-otel-lab
+    namespace: monolith-otel-observability
     files:
       - span-metrics-alerts.yaml=grafana/provisioning/alerting/span-metrics-alerts.yaml
   - name: grafana-dashboards
-    namespace: monolith-otel-lab
+    namespace: monolith-otel-observability
     files:
       - monolith-otel-lab.json=grafana/dashboards/monolith-otel-lab.json

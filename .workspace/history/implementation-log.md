@@ -118,6 +118,32 @@ Verification: docker compose version 5.2.0 OK, make -n up → "docker compose up
 Next: 없음.
 ```
 
+### 2026-07-05 (12) — Kubernetes namespace 목적별 분리
+
+```text
+Task: 로컬 Kubernetes 예제를 운영 구조에 가깝게 namespace 목적별로 분리
+Files Changed:
+  - deploy/k8s/manifests/*.yaml, deploy/kustomization.yaml
+  - Makefile k8s namespace 변수와 rollout/status/log target
+  - README.md, docs/{architecture,study-guide}.md, .workspace 문서
+Decision Summary:
+  - app/data/observability 역할별로 namespace를 분리:
+    monolith-otel-app, monolith-otel-data, monolith-otel-observability.
+  - cross-namespace 의존성은 Kubernetes DNS 규칙에 맞춰 namespace-qualified service name 사용.
+  - Grafana/Tempo/Prometheus/Collector는 같은 observability namespace에 둬 내부 datasource/remote_write/OTLP export는
+    짧은 service name을 유지.
+Verification:
+  - RED: 기존 manifest는 expected namespaces 3개 검증에서 실패(monolith-otel-lab 단일 namespace)
+  - GREEN: kubectl kustomize deploy namespace 검증 PASS
+  - cross-namespace DNS 검증 PASS: DB_HOST, OTEL_EXPORTER_OTLP_ENDPOINT, Prometheus app target
+  - YAML parse PASS, make k8s-dry-run PASS, make -n k8s-up/status/logs PASS
+  - make k8s-down && make k8s-up PASS: 3 namespaces created, 6 workloads rollout success
+  - make k8s-load PASS; Prometheus order metric/span metric, Grafana datasource/alert, Tempo search API PASS
+  - app pod에서 postgres/otel-collector namespace-qualified DNS resolution PASS
+  - ./gradlew test --rerun-tasks BUILD SUCCESSFUL, git diff --check PASS
+Next: 없음.
+```
+
 ### 2026-07-04 (8) — make up app 기본 포트 변경
 
 ```text

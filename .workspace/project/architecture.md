@@ -55,6 +55,13 @@ Local runtime:
 ```text
 Primary: Docker Compose
 Optional: kind-based local Kubernetes example
+  - monolith-otel-app: Spring Boot app
+  - monolith-otel-data: PostgreSQL
+  - monolith-otel-observability: OpenTelemetry Collector, Tempo, Prometheus, Grafana
 ```
+
+Kubernetes namespace가 분리되어 있으므로 app은 PostgreSQL과 Collector를
+`postgres.monolith-otel-data.svc.cluster.local`,
+`otel-collector.monolith-otel-observability.svc.cluster.local`로 호출한다.
 
 (참고: decisions/ADR-0002, ADR-0004, ADR-0005, ADR-0006, ADR-0008)

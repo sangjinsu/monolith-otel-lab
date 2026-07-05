@@ -26,6 +26,8 @@
 - Makefile (`COMPOSE ?=`, `APP_PORT` overridable), scripts/load.sh, README.
 - App host port defaults to `10080` to avoid common local `8080` conflicts; container-internal app port remains `8080`.
 - Local Kubernetes example: kind config, raw manifests, Kustomize-generated Grafana ConfigMaps, `make k8s-*` targets.
+- Kubernetes namespaces are separated by purpose: `monolith-otel-app`, `monolith-otel-data`,
+  `monolith-otel-observability`; cross-namespace dependencies use namespace-qualified service DNS.
 - README Test / Verification Guide documents fast app tests, Docker Compose integration tests, and kind integration tests.
 
 ### Verification (2026-06-29)
@@ -38,6 +40,8 @@
 - `make k8s-load` — generated 20 successful orders + 1 failing payment request against `http://localhost:10080`.
 - Kubernetes runtime observability: Prometheus order metrics and Tempo span metrics present, Grafana datasources/alert rule
   provisioned, Tempo search API returns `http post /orders` traces with 6 spans.
+- Namespace-separated Kubernetes runtime: app/data/observability namespaces created; cross-namespace DNS resolution,
+  Prometheus scrape target, Tempo/Grafana path verified.
 - `./gradlew test --rerun-tasks` and `git diff --check` PASS.
 
 ### ADRs

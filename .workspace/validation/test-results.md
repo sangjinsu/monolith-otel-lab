@@ -1,6 +1,101 @@
 # Test Results
 
-## Latest Result — 2026-07-05 (Local Kubernetes with kind)
+## Latest Result — 2026-07-05 (Kubernetes namespace separation)
+
+### Red / green render validation
+
+```text
+Command: kubectl kustomize deploy | ruby namespace assertion
+Result:  RED before change:
+         expected namespaces ["monolith-otel-app", "monolith-otel-data", "monolith-otel-observability"],
+         got ["monolith-otel-lab"]
+
+Command: same assertion after change
+Result:  PASS; namespaces OK:
+         monolith-otel-app, monolith-otel-data, monolith-otel-observability
+
+Command: rendered DNS assertion
+Result:  PASS; DB_HOST, OTEL_EXPORTER_OTLP_ENDPOINT, Prometheus app scrape target use namespace-qualified DNS
+```
+
+### Static validation
+
+```text
+Command: ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_stream(File.read(path)); puts "OK #{path}" }' deploy/kustomization.yaml deploy/k8s/kind-config.yaml deploy/k8s/manifests/*.yaml
+Result:  PASS
+
+Command: make k8s-dry-run
+Result:  PASS; namespaces, ConfigMaps, Services, Deployments rendered/applied in client dry-run mode
+
+Command: make -n k8s-up && make -n k8s-status && make -n k8s-logs
+Result:  PASS; Make targets use monolith-otel-app, monolith-otel-data, monolith-otel-observability
+```
+
+### Runtime verification
+
+```text
+Command: make k8s-down && make k8s-up
+Result:  kind cluster recreated; 3 namespaces created;
+         postgres, tempo, prometheus, otel-collector, grafana, app rollout success
+
+Command: make k8s-status
+Result:  monolith-otel-app: app Running/Ready
+         monolith-otel-data: postgres Running/Ready
+         monolith-otel-observability: grafana, otel-collector, prometheus, tempo Running/Ready
+
+Command: curl -fsS http://localhost:10080/healthz
+Result:  {"status":"ok"}
+
+Command: curl -fsS -u admin:admin http://localhost:3000/api/health
+Result:  Grafana database ok, version 11.2.0
+
+Command: curl -fsS http://localhost:9090/-/ready
+Result:  Prometheus Server is Ready.
+
+Command: make k8s-load
+Result:  sent 20 successful orders and 1 failing payment request; exit 0
+
+Command: kubectl -n monolith-otel-app exec deployment/app -- getent hosts ...
+Result:  postgres.monolith-otel-data.svc.cluster.local and
+         otel-collector.monolith-otel-observability.svc.cluster.local resolve
+```
+
+### Observability verification
+
+```text
+Command: PromQL order_created_count_total
+Result:  value 20; instance=app.monolith-otel-app.svc.cluster.local:8080
+
+Command: PromQL order_failed_count_total
+Result:  value 1; instance=app.monolith-otel-app.svc.cluster.local:8080
+
+Command: PromQL sum by (span_name, status_code) (traces_spanmetrics_calls_total)
+Result:  includes order-controller.create-order, order-service.create-order,
+         inventory-service.reserve, payment-client.authorize,
+         order-repository.insert, http post /orders;
+         payment-client.authorize STATUS_CODE_ERROR=1
+
+Command: curl -fsS -u admin:admin http://localhost:3000/api/datasources
+Result:  Prometheus -> http://prometheus:9090, Tempo -> http://tempo:3200
+
+Command: curl -fsS -u admin:admin http://localhost:3000/api/v1/provisioning/alert-rules
+Result:  "Payment authorization span errors" rule provisioned
+
+Command: Tempo search API q={name="http post /orders"}
+Result:  POST /orders traces returned; 3 sampled results each have spanCount=6
+```
+
+### Unit / slice tests and hygiene
+
+```text
+Command: ./gradlew test --rerun-tasks
+Result:  BUILD SUCCESSFUL in 7s; 4 actionable tasks executed
+
+Command: git diff --check
+Result:  PASS
+```
+
+## Previous Result — 2026-07-05 (Local Kubernetes with kind)
 
 ### Static and render validation
 

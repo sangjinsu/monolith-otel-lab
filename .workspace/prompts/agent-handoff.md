@@ -17,7 +17,8 @@ Phase 6에서는 kind 기반 local Kubernetes 예제를 추가하고 runtime 검
   alerting은 Grafana managed alerting으로 `payment-span-errors` rule을 provisioning.
   로그 JSON + MDC trace_id/span_id.
 - **스택**: docker-compose 6서비스. `make up/down/logs/test/load`. 기본 app host port는 10080이며 APP_PORT로 override.
-  선택 실습으로 kind 기반 Kubernetes manifest와 `make k8s-*` 타깃을 제공.
+  선택 실습으로 kind 기반 Kubernetes manifest와 `make k8s-*` 타깃을 제공. Kubernetes namespace는
+  `monolith-otel-app`, `monolith-otel-data`, `monolith-otel-observability`로 목적별 분리.
 - **학습 문서**: docs/{architecture, observability-deep-dive, study-guide}.md(한국어) +
   docs/images/ 실캡처 3장. README에 학습 진입점. 코드에 교육 주석(영어).
 - **설계 기록**: .workspace (ADR 0001~0008, spec/architecture/observability-design/glossary,
@@ -51,6 +52,7 @@ Phase 6에서는 kind 기반 local Kubernetes 예제를 추가하고 runtime 검
   `make k8s-up` rollout success, `curl http://localhost:10080/healthz` OK,
   `make k8s-load` OK, Prometheus order metrics/span metrics OK,
   Grafana datasource/alert provisioning OK, Tempo search API에서 `http post /orders` traces 조회 OK.
+  app/data/observability namespace 분리 후에도 같은 검증을 다시 통과함.
 - 라이브: PromQL 3종 반환, 성공 trace 6 spans(payment가 지연 지배), 실패 trace 5 spans
   (payment error + insert 부재), 로그 trace_id ↔ Tempo trace 상관 실측
   (56d2c61f... = deep-dive §8 예시 = trace-success.png 동일 trace)

@@ -1,4 +1,14 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: monolith-otel-lab
+  name: monolith-otel-app
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monolith-otel-data
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monolith-otel-observability

@@ -188,6 +188,7 @@ make down        # 볼륨 포함 삭제 (-v)
 
 Compose 실습을 마쳤다면 같은 구조를 kind 기반 Kubernetes에서도 띄워볼 수 있다.
 host port는 compose와 동일하게 `10080`, `3000`, `9090`을 사용하므로 compose stack과 동시에 실행하지 않는다.
+namespace는 목적별로 `monolith-otel-app`, `monolith-otel-data`, `monolith-otel-observability`로 나뉜다.
 
 ```bash
 make down          # compose stack이 떠 있다면 먼저 정리
@@ -217,7 +218,9 @@ make k8s-down
 ```
 
 이 예제는 Helm이나 OpenTelemetry Operator를 쓰지 않고 raw manifest + Kustomize ConfigMap generator로 구성한다.
-목표는 운영 배포가 아니라 compose와 Kubernetes 리소스를 1:1로 비교하는 학습이다.
+목표는 운영 배포가 아니라 compose와 Kubernetes 리소스를 비교하는 학습이다.
+운영에 가까운 분리를 보여주기 위해 app/data/observability namespace를 나누고,
+cross-namespace 연결은 `service.namespace.svc.cluster.local` DNS 이름을 사용한다.
 
 기본 과정을 마쳤다면 [AGENTS.md의 Optional Extensions](../AGENTS.md#optional-extensions):
 

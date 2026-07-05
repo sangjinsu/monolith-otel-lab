@@ -144,6 +144,17 @@ Kubernetes 예제는 `kind` 기준이며, Grafana provisioning은 compose에서 
 
 > Compose stack과 같은 host port(`10080`, `3000`, `9090`)를 사용한다. 이미 compose를 실행 중이면 먼저 `make down`으로 정리한다.
 
+namespace는 목적별로 분리한다.
+
+| Namespace | Purpose | Resources |
+|---|---|---|
+| `monolith-otel-app` | 애플리케이션 런타임 | Spring Boot app Service/Deployment |
+| `monolith-otel-data` | 데이터 저장소 | PostgreSQL Service/Deployment |
+| `monolith-otel-observability` | 관측성 플랫폼 | OpenTelemetry Collector, Tempo, Prometheus, Grafana |
+
+namespace가 다르기 때문에 app은 `postgres.monolith-otel-data.svc.cluster.local`,
+`otel-collector.monolith-otel-observability.svc.cluster.local`처럼 namespace-qualified DNS로 접근한다.
+
 ```bash
 make k8s-up
 curl -fsS http://localhost:10080/healthz
@@ -248,7 +259,7 @@ make k8s-load
 기대 결과:
 
 ```text
-6 pods Running/Ready
+6 pods Running/Ready across 3 namespaces
 {"status":"ok"}
 sent 20 successful orders and 1 failing payment request
 ```
@@ -264,7 +275,7 @@ Prometheus: http://localhost:9090
 Tempo API를 직접 보고 싶으면 짧게 port-forward를 연다.
 
 ```bash
-kubectl -n monolith-otel-lab port-forward svc/tempo 3200:3200
+kubectl -n monolith-otel-observability port-forward svc/tempo 3200:3200
 
 curl -fsS -G 'http://localhost:3200/api/search' \
   --data-urlencode 'q={name="http post /orders"}' \
