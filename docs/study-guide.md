@@ -6,6 +6,7 @@
 입히는 전 과정 — MSA가 아니어도 내부 계층 흐름을 추적할 수 있음을 눈으로 확인한다.
 
 **전제**: Docker(또는 colima 등) + make. JDK 21은 로컬 테스트 실행 시에만 필요하다.
+로컬 Kubernetes 실습은 추가로 kind와 kubectl이 필요하다.
 
 ---
 
@@ -182,6 +183,41 @@ make down        # 볼륨 포함 삭제 (-v)
 ---
 
 ## 7. 다음 단계
+
+### 로컬 Kubernetes 실습
+
+Compose 실습을 마쳤다면 같은 구조를 kind 기반 Kubernetes에서도 띄워볼 수 있다.
+host port는 compose와 동일하게 `10080`, `3000`, `9090`을 사용하므로 compose stack과 동시에 실행하지 않는다.
+
+```bash
+make down          # compose stack이 떠 있다면 먼저 정리
+make k8s-up
+curl -fsS http://localhost:10080/healthz
+make k8s-load
+```
+
+확인 위치:
+
+```text
+Grafana:    http://localhost:3000
+Prometheus: http://localhost:9090
+```
+
+상태와 로그:
+
+```bash
+make k8s-status
+make k8s-logs
+```
+
+정리:
+
+```bash
+make k8s-down
+```
+
+이 예제는 Helm이나 OpenTelemetry Operator를 쓰지 않고 raw manifest + Kustomize ConfigMap generator로 구성한다.
+목표는 운영 배포가 아니라 compose와 Kubernetes 리소스를 1:1로 비교하는 학습이다.
 
 기본 과정을 마쳤다면 [AGENTS.md의 Optional Extensions](../AGENTS.md#optional-extensions):
 

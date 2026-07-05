@@ -1,6 +1,95 @@
 # Test Results
 
-## Latest Result — 2026-07-04 (Grafana alert test)
+## Latest Result — 2026-07-05 (Local Kubernetes with kind)
+
+### Static and render validation
+
+```text
+Command: ruby -e 'require "yaml"; ARGV.each { |path| YAML.load_stream(File.read(path)); puts "OK #{path}" }' deploy/kustomization.yaml deploy/k8s/kind-config.yaml deploy/k8s/manifests/*.yaml
+Result:  PASS
+
+Command: kubectl kustomize deploy
+Result:  PASS
+
+Command: make k8s-dry-run
+Result:  PASS; namespace, ConfigMaps, Services, Deployments rendered/applied in client dry-run mode
+```
+
+### Runtime verification
+
+```text
+Command: docker compose down
+Result:  Compose containers stopped to free localhost ports 10080/3000/9090; named volumes preserved
+
+Command: make k8s-up
+Result:  kind cluster monolith-otel-lab created; app image built and loaded;
+         postgres, tempo, prometheus, otel-collector, grafana, app rollout success
+
+Command: make k8s-status
+Result:  6 pods Running/Ready; app NodePort 30080, grafana NodePort 30300, prometheus NodePort 30090
+
+Command: curl -fsS http://localhost:10080/healthz
+Result:  {"status":"ok"}
+
+Command: curl -fsS -u admin:admin http://localhost:3000/api/health
+Result:  Grafana database ok, version 11.2.0
+
+Command: curl -fsS http://localhost:9090/-/ready
+Result:  Prometheus Server is Ready.
+
+Command: make k8s-load
+Result:  sent 20 successful orders and 1 failing payment request; exit 0
+```
+
+### Observability verification
+
+```text
+Command: PromQL order_created_count_total
+Result:  value 20
+
+Command: PromQL order_failed_count_total
+Result:  value 1
+
+Command: PromQL sum by (span_name, status_code) (traces_spanmetrics_calls_total)
+Result:  includes order-controller.create-order, order-service.create-order,
+         inventory-service.reserve, payment-client.authorize,
+         order-repository.insert, http post /orders;
+         payment-client.authorize STATUS_CODE_ERROR=1
+
+Command: curl -fsS -u admin:admin http://localhost:3000/api/datasources
+Result:  Prometheus -> http://prometheus:9090, Tempo -> http://tempo:3200
+
+Command: curl -fsS -u admin:admin http://localhost:3000/api/v1/provisioning/alert-rules
+Result:  "Payment authorization span errors" rule provisioned
+
+Command: Tempo search API q={name="http post /orders"}
+Result:  POST /orders traces returned; serviceStats spanCount=6
+```
+
+### Unit / slice tests and hygiene
+
+```text
+Command: ./gradlew test --rerun-tasks
+Result:  BUILD SUCCESSFUL in 7s; 4 actionable tasks executed
+
+Command: git diff --check
+Result:  PASS
+```
+
+### Pre-commit rerun after README test guide update
+
+```text
+Command: make k8s-dry-run
+Result:  PASS
+
+Command: ./gradlew test --rerun-tasks
+Result:  BUILD SUCCESSFUL in 6s; 4 actionable tasks executed
+
+Command: git diff --check
+Result:  PASS
+```
+
+## Previous Result — 2026-07-04 (Grafana alert test)
 
 ### Static configuration validation
 

@@ -50,4 +50,11 @@ Metric: Micrometer -> Actuator /actuator/prometheus -> Prometheus scrape
 Log: Logback structured JSON (MDC traceId/spanId)
 ```
 
-(참고: decisions/ADR-0002, ADR-0004, ADR-0005, ADR-0006)
+Local runtime:
+
+```text
+Primary: Docker Compose
+Optional: kind-based local Kubernetes example
+```
+
+(참고: decisions/ADR-0002, ADR-0004, ADR-0005, ADR-0006, ADR-0008)

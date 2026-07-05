@@ -173,3 +173,31 @@ Verification:
   - Grafana ruler API state Alerting, Alertmanager API state active 확인
 Next: 없음.
 ```
+
+### 2026-07-05 (11) — 로컬 Kubernetes 예제 추가
+
+```text
+Task: kind 기반 로컬 Kubernetes 실습 예제 추가
+Files Changed:
+  - deploy/k8s/kind-config.yaml, deploy/k8s/manifests/*.yaml
+  - deploy/kustomization.yaml
+  - Makefile k8s-up/k8s-down/k8s-dry-run/k8s-load/k8s-logs/k8s-status
+  - README.md(Local Kubernetes + Test / Verification Guide), docs/{architecture,study-guide}.md, .workspace 문서
+Decision Summary:
+  - Helm/Operator 없이 raw manifest + Kustomize ConfigMap generator로 구성해 학습자가
+    Docker Compose와 Kubernetes 리소스 대응 관계를 직접 볼 수 있게 함.
+  - 앱 host port는 기존 10080 정책을 유지하고, Grafana 3000 / Prometheus 9090도 kind
+    extraPortMappings + NodePort로 노출.
+  - PostgreSQL/Tempo/Prometheus 저장소는 local lab 성격에 맞게 emptyDir 사용.
+Verification:
+  - YAML parse PASS, kubectl kustomize deploy PASS, make k8s-dry-run PASS
+  - make k8s-up PASS: postgres/tempo/prometheus/otel-collector/grafana/app rollout success
+  - curl http://localhost:10080/healthz -> {"status":"ok"}
+  - make k8s-load PASS: 20 successful orders + 1 failing payment request
+  - Prometheus: order_created_count_total=20, order_failed_count_total=1,
+    traces_spanmetrics_calls_total includes payment-client.authorize STATUS_CODE_ERROR=1
+  - Grafana: Tempo/Prometheus datasources and "Payment authorization span errors" alert rule provisioned
+  - Tempo search API: q={name="http post /orders"} returns traces with spanCount=6
+  - ./gradlew test --rerun-tasks BUILD SUCCESSFUL, git diff --check PASS
+Next: 없음.
+```

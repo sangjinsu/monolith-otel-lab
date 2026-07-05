@@ -1,6 +1,6 @@
 # Acceptance Checklist
 
-(검증 완료: 2026-07-04 — docker compose 통합 스택, app host port 10080)
+(검증 완료: 2026-07-05 — docker compose 통합 스택 + kind 로컬 Kubernetes, app host port 10080)
 
 ## Functional
 
@@ -34,6 +34,9 @@
 - [x] make down works (docker compose down -v)
 - [x] make load works (20 ok + 1 fail)
 - [x] README explains how to run
+- [x] make k8s-up works on local kind
+- [x] make k8s-load works against the kind stack
+- [x] Kubernetes Grafana/Prometheus endpoints are reachable on localhost
 
 ## Notes
 

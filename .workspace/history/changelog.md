@@ -25,14 +25,25 @@
   and span metrics alert rule.
 - Makefile (`COMPOSE ?=`, `APP_PORT` overridable), scripts/load.sh, README.
 - App host port defaults to `10080` to avoid common local `8080` conflicts; container-internal app port remains `8080`.
+- Local Kubernetes example: kind config, raw manifests, Kustomize-generated Grafana ConfigMaps, `make k8s-*` targets.
+- README Test / Verification Guide documents fast app tests, Docker Compose integration tests, and kind integration tests.
 
 ### Verification (2026-06-29)
 - `./gradlew test` — 12 tests PASS.
 - docker compose integration: functional + trace (5-layer spans, failure error span) + metrics + JSON logs all PASS.
 
+### Verification (2026-07-05)
+- `make k8s-dry-run` — Kubernetes manifests render/apply in client dry-run mode.
+- `make k8s-up` — kind cluster `monolith-otel-lab` created and all 6 workloads rolled out.
+- `make k8s-load` — generated 20 successful orders + 1 failing payment request against `http://localhost:10080`.
+- Kubernetes runtime observability: Prometheus order metrics and Tempo span metrics present, Grafana datasources/alert rule
+  provisioned, Tempo search API returns `http post /orders` traces with 6 spans.
+- `./gradlew test --rerun-tasks` and `git diff --check` PASS.
+
 ### ADRs
 - 0001 scope, 0002 monolith/Java packages, 0003 otel/tempo + actuator metrics,
-  0004 Micrometer observability, 0005 PostgreSQL+JPA, 0006 Java/Spring Boot, 0007 Tempo span metrics.
+  0004 Micrometer observability, 0005 PostgreSQL+JPA, 0006 Java/Spring Boot, 0007 Tempo span metrics,
+  0008 local Kubernetes example.
 
 ### Learning material (2026-07-04)
 - docs/: architecture(구성도 4종 mermaid + 설정 파일 지도), observability-deep-dive(동작 원리),

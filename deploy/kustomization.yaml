@@ -1,0 +1,32 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - k8s/manifests/00-namespace.yaml
+  - k8s/manifests/10-postgres.yaml
+  - k8s/manifests/20-tempo.yaml
+  - k8s/manifests/30-prometheus.yaml
+  - k8s/manifests/40-otel-collector.yaml
+  - k8s/manifests/50-grafana.yaml
+  - k8s/manifests/60-app.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: grafana-datasources
+    namespace: monolith-otel-lab
+    files:
+      - datasources.yaml=grafana/provisioning/datasources/datasources.yaml
+  - name: grafana-dashboard-provider
+    namespace: monolith-otel-lab
+    files:
+      - dashboards.yaml=grafana/provisioning/dashboards/dashboards.yaml
+  - name: grafana-alerting
+    namespace: monolith-otel-lab
+    files:
+      - span-metrics-alerts.yaml=grafana/provisioning/alerting/span-metrics-alerts.yaml
+  - name: grafana-dashboards
+    namespace: monolith-otel-lab
+    files:
+      - monolith-otel-lab.json=grafana/dashboards/monolith-otel-lab.json

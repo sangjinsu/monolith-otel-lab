@@ -1,11 +1,12 @@
 # Agent Handoff
 
-## Current State — 2026-07-04 (Phase 5: Grafana alert 테스트 완료)
+## Current State — 2026-07-05 (Phase 6: 로컬 Kubernetes 예제 완료)
 
 구현·검증·GitHub 공개(Phase 1)에 이어, 저장소를 **학습 교재**로 쓸 수 있는 문서 계층을 추가했다.
 Phase 3에서는 로컬 8080 충돌 회피를 위해 기본 app host port를 10080으로 변경했다.
 Phase 4에서는 Tempo metrics-generator 기반 span metrics를 추가했고 Prometheus/Grafana에서 검증했다.
 Phase 5에서는 Grafana managed alert rule을 추가해 결제 실패 span metrics로 Alerting 상태를 재현했다.
+Phase 6에서는 kind 기반 local Kubernetes 예제를 추가하고 runtime 검증까지 완료했다.
 
 ## What Exists
 
@@ -16,9 +17,10 @@ Phase 5에서는 Grafana managed alert rule을 추가해 결제 실패 span metr
   alerting은 Grafana managed alerting으로 `payment-span-errors` rule을 provisioning.
   로그 JSON + MDC trace_id/span_id.
 - **스택**: docker-compose 6서비스. `make up/down/logs/test/load`. 기본 app host port는 10080이며 APP_PORT로 override.
+  선택 실습으로 kind 기반 Kubernetes manifest와 `make k8s-*` 타깃을 제공.
 - **학습 문서**: docs/{architecture, observability-deep-dive, study-guide}.md(한국어) +
   docs/images/ 실캡처 3장. README에 학습 진입점. 코드에 교육 주석(영어).
-- **설계 기록**: .workspace (ADR 0001~0007, spec/architecture/observability-design/glossary,
+- **설계 기록**: .workspace (ADR 0001~0008, spec/architecture/observability-design/glossary,
   validation/test-results, experiments 2종).
 
 ## Key Facts (다음 세션이 알아야 할 것)
@@ -33,9 +35,9 @@ Phase 5에서는 Grafana managed alert rule을 추가해 결제 실패 span metr
 - span metrics 기본 metric 이름은 `traces_spanmetrics_calls_total`, `traces_spanmetrics_latency_*`,
   `traces_spanmetrics_size_total`. 기본 label은 `service`, `span_name`, `span_kind`, `status_code`.
 
-## Verified (2026-07-04)
+## Verified (2026-07-05)
 
-- ./gradlew test 12 PASS · docs/README 상대링크 전수 OK
+- ./gradlew test --rerun-tasks BUILD SUCCESSFUL · git diff --check PASS
 - 기본 host port 10080 정책 적용: `docker compose config`, `curl /healthz`, `make load`로 검증
 - span metrics runtime 검증 완료:
   `traces_spanmetrics_calls_total`, `traces_spanmetrics_latency_*`, `traces_spanmetrics_size_total`
@@ -45,6 +47,10 @@ Phase 5에서는 Grafana managed alert rule을 추가해 결제 실패 span metr
 - Grafana alert rule 검증 완료:
   `Payment authorization span errors` rule은 `make load`의 실패 결제 요청 후 Grafana ruler API에서
   `Alerting`, Alertmanager API에서 `active`로 확인됨.
+- Kubernetes 예제 runtime 검증 완료:
+  `make k8s-up` rollout success, `curl http://localhost:10080/healthz` OK,
+  `make k8s-load` OK, Prometheus order metrics/span metrics OK,
+  Grafana datasource/alert provisioning OK, Tempo search API에서 `http post /orders` traces 조회 OK.
 - 라이브: PromQL 3종 반환, 성공 trace 6 spans(payment가 지연 지배), 실패 trace 5 spans
   (payment error + insert 부재), 로그 trace_id ↔ Tempo trace 상관 실측
   (56d2c61f... = deep-dive §8 예시 = trace-success.png 동일 trace)

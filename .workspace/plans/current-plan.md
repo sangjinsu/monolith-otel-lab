@@ -2,7 +2,7 @@
 
 ## Current Phase
 
-Phase 5 완료: Grafana alert 테스트 추가 (2026-07-04).
+Phase 6 완료: 로컬 Kubernetes 예제 추가 및 kind runtime 검증 (2026-07-05).
 프로젝트는 "실행 가능한 관측성 lab" + "읽고 실습하는 교재" 두 역할을 모두 갖춤.
 
 ## Done
@@ -33,6 +33,12 @@ Phase 5 완료: Grafana alert 테스트 추가 (2026-07-04).
   - [x] README/docs/.workspace alert 테스트 절차 갱신
   - [x] Grafana API로 rule provisioning 확인
   - [x] `make load`로 Firing 상태 검증
+- [x] Phase 6 (2026-07-05): 로컬 Kubernetes 예제
+  - [x] kind config + raw manifests + Kustomize ConfigMap generator 추가
+  - [x] Makefile k8s 타깃 추가
+  - [x] README/docs/.workspace k8s 실습 문서 갱신
+  - [x] `kubectl apply --dry-run=client -k deploy` 검증
+  - [x] `make k8s-up`, `make k8s-load` runtime 검증
 
 ## Backlog (Could Have)
 
@@ -47,4 +53,4 @@ Phase 5 완료: Grafana alert 테스트 추가 (2026-07-04).
 
 ## Next Action
 
-없음.
+선택: 로컬 kind 실습이 끝나면 `make k8s-down`으로 클러스터 정리.
